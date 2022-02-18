@@ -2,8 +2,9 @@ describe("************ Tx from contract ******************", () => {
     let target, caller;
 
     before(async () => {
-        targetAddress = "0xa532294c1Cee1001b5e6BEF791A04de4239152E9";
-        callerAddress = "0x65E960dC60c292C03DC0e35e2FbD15825bb8856E";
+        // Set these variables as empty strings to deploy new contracts
+        targetAddress = "0x00876813D23BE576D8f9EA2c12eC0acE0935f9a6";
+        callerAddress = "0x0AA219A176D4853Ee29e375e86265B1E43bB56d2";
 
         owner = await reef.getSignerByName("account1");
 
@@ -17,6 +18,7 @@ describe("************ Tx from contract ******************", () => {
         } else {
             target = await Target.attach(targetAddress);
         }
+        console.log(`\tTarget contract deployed at ${target.address}`);
 
         const Caller = await reef.getContractFactory("Caller", owner);
         if (!callerAddress) {
@@ -25,10 +27,20 @@ describe("************ Tx from contract ******************", () => {
         } else {
             caller = await Caller.attach(callerAddress);
         }
+        console.log(`\tCaller contract deployed at ${caller.address}`);
     });
 
-    it("Should withdraw from caller", async () => {
-        const tx = await caller.withdrawFromTarget(target.address, {
+    it("Should withdraw from caller with transfer", async () => {
+        const tx = await caller.withdrawFromTargetTransfer(target.address, {
+            gasLimit: 1000000000,
+            customData: { storageLimit: 1000000000 },
+        });
+        const receipt = await tx.wait();
+        console.log("amount:", receipt.events[0].args.amount);
+    });
+
+    it("Should withdraw from caller low level call", async () => {
+        const tx = await caller.withdrawFromTargetCall(target.address, {
             gasLimit: 1000000000,
             customData: { storageLimit: 1000000000 },
         });

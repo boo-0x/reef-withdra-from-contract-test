@@ -7,8 +7,12 @@ contract Caller {
         emit Received(msg.value);
     }
 
-    function withdrawFromTarget(Target target) external {
-        target.withdraw();
+    function withdrawFromTargetCall(Target target) external {
+        target.withdrawCall();
+    }
+
+    function withdrawFromTargetTransfer(Target target) external {
+        target.withdrawTransfer();
     }
 }
 
@@ -17,10 +21,14 @@ contract Target {
 
     receive() external payable {}
 
-    function withdraw() external {
+    function withdrawCall() external {
         (bool successTx, ) = msg.sender.call{ value: 1 wei }("");
         if (!successTx) {
             revert("Tx error");
         }
+    }
+
+    function withdrawTransfer() external {
+        payable(msg.sender).transfer(1 wei);
     }
 }
